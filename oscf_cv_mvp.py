@@ -166,8 +166,46 @@ def support_rule(cup: Observation, support: Observation, tolerance_px: float = 1
     }
 
 
+class MaskProjectionError(ValueError):
+    """Counterfactual mask translation would clip observed mask pixels."""
+
+
+def translate_mask(mask: np.ndarray, dx: float, dy: float) -> np.ndarray:
+    """Translate a full-frame binary mask by the nearest integer pixel offset.
+
+    Bounding boxes retain their subpixel translation. Nearest-pixel translation
+    preserves the mask's area and shape when no foreground pixel is clipped.
+    Clipping is rejected rather than silently changing the octonion's area or
+    orientation features and introducing a spurious associator residual.
+    """
+    if mask.ndim != 2:
+        raise ValueError("mask must be a 2-D full-frame array")
+    shift_x, shift_y = int(round(dx)), int(round(dy))
+    if shift_x == 0 and shift_y == 0:
+        return mask.copy()
+    height, width = mask.shape
+    ys, xs = np.nonzero(mask)
+    shifted = np.zeros((height, width), dtype=bool)
+    if xs.size == 0:
+        return shifted
+    new_xs, new_ys = xs + shift_x, ys + shift_y
+    if (new_xs.min() < 0 or new_xs.max() >= width or
+            new_ys.min() < 0 or new_ys.max() >= height):
+        raise MaskProjectionError(
+            f"mask would be clipped by translation dx={dx:.3f}, dy={dy:.3f} "
+            f"(rounded to {shift_x}, {shift_y} pixels)"
+        )
+    shifted[new_ys, new_xs] = True
+    return shifted
+
+
 def project_onto_support(cup: Observation, support: Observation) -> Observation:
-    """Minimal proxy intervention: slide candidate until its bottom meets support top."""
+    """Slide the object onto its declared support, translating any mask too.
+
+    When no motion is required, the original observation (including its mask)
+    is unchanged. A counterfactual that would clip a mask is rejected so the
+    associator feature can be reported as unavailable, not as a false anomaly.
+    """
     x1, y1, x2, y2 = cup.bbox
     sx1, sy1, sx2, _ = support.bbox
     dy = sy1 - y2
@@ -177,7 +215,13 @@ def project_onto_support(cup: Observation, support: Observation) -> Observation:
     xmax = sx2 - width / 2.0
     new_cx = (sx1 + sx2) / 2.0 if xmin > xmax else min(max(cx, xmin), xmax)
     dx = new_cx - cx
-    return replace(cup, bbox=(x1 + dx, y1 + dy, x2 + dx, y2 + dy), mask=None)
+    if abs(dx) < EPS and abs(dy) < EPS:
+        return cup
+    projected_mask = (translate_mask(cup.mask, dx, dy)
+                      if cup.mask is not None else None)
+    return replace(cup,
+                   bbox=(x1 + dx, y1 + dy, x2 + dx, y2 + dy),
+                   mask=projected_mask)
 
 
 def rule_associator_features(
@@ -192,7 +236,11 @@ def rule_associator_features(
     if third is None:
         return {"status": "INSUFFICIENT", "reason": "need a third distinct entity for an associator"}
     before = encode_scene(observations, size)
-    updated = [project_onto_support(x, support) if x.id == target.id else x for x in observations]
+    try:
+        updated = [project_onto_support(x, support) if x.id == target.id else x
+                   for x in observations]
+    except MaskProjectionError as exc:
+        return {"status": "INSUFFICIENT", "reason": str(exc)}
     after = encode_scene(updated, size)
     before_vals = [before[x.id]["q"] for x in (target, support, third)]
     after_vals = [after[x.id]["q"] for x in (target, support, third)]
