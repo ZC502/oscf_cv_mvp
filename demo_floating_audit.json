@@ -1,0 +1,120 @@
+{
+  "decision": "WARN",
+  "image_size": {
+    "width": 640,
+    "height": 420
+  },
+  "representation": "Cayley-Dickson octonion (8D), all channels normalized/proxied",
+  "q_channel_schema": [
+    "confidence",
+    "x_center_norm",
+    "y_center_norm",
+    "depth_norm_or_zero",
+    "sqrt_area_fraction",
+    "mask_axis_proxy_or_zero",
+    "semantic_policy_weight",
+    "proximity_coupling"
+  ],
+  "objects": [
+    {
+      "id": "cup_0",
+      "label": "cup",
+      "q": [
+        0.94,
+        0.484375,
+        0.3095238,
+        0.0,
+        0.0964396,
+        0.0,
+        0.7,
+        0.5211439
+      ],
+      "bbox_xyxy": [
+        285.0,
+        105.0,
+        335.0,
+        155.0
+      ],
+      "depth_valid": false,
+      "axis_proxy_valid": false,
+      "has_mask": false
+    },
+    {
+      "id": "table_0",
+      "label": "table",
+      "q": [
+        0.97,
+        0.5,
+        0.7047619,
+        0.0,
+        0.2983087,
+        0.0,
+        0.8,
+        0.6106124
+      ],
+      "bbox_xyxy": [
+        90.0,
+        270.0,
+        550.0,
+        322.0
+      ],
+      "depth_valid": false,
+      "axis_proxy_valid": false,
+      "has_mask": false
+    },
+    {
+      "id": "book_0",
+      "label": "book",
+      "q": [
+        0.91,
+        0.3125,
+        0.6142857,
+        0.0,
+        0.0896421,
+        0.0,
+        0.6,
+        0.6106124
+      ],
+      "bbox_xyxy": [
+        155.0,
+        246.0,
+        245.0,
+        270.0
+      ],
+      "depth_valid": false,
+      "axis_proxy_valid": false,
+      "has_mask": false
+    }
+  ],
+  "findings": [
+    {
+      "contract": "cup:on:table",
+      "target_id": "cup_0",
+      "support_id": "table_0",
+      "status": "WARN",
+      "vertical_gap_px": -115.0,
+      "horizontal_overlap_fraction": 1.0,
+      "tolerance_px": 14.0,
+      "note": "User-declared 2-D support relation (not a proven causal contact)",
+      "octonion_features": {
+        "status": "MEASURED",
+        "triple": [
+          "cup_0",
+          "table_0",
+          "book_0"
+        ],
+        "associator_norm_observed": 0.04483344,
+        "associator_norm_projected": 0.01777704,
+        "associator_counterfactual_delta": 0.0368369,
+        "linear_8d_counterfactual_delta": 0.4021838,
+        "note": "Proxy geometry intervention, not an identified causal effect"
+      }
+    }
+  ],
+  "limitations": [
+    "Single-image 2D support is a declared geometric prior, not a causal conclusion.",
+    "Associator residuals are telemetry; no decision is based solely on a nonzero associator.",
+    "Missing depth or mask stays explicitly unknown, never silently inferred."
+  ],
+  "input_kind": "synthetic_mock"
+}
