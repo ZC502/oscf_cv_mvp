@@ -4,6 +4,16 @@ A **research prototype** for comparing octonion associator features with simple,
 
 **Not** a validated physical-causality detector. A nonzero octonion associator is not a defect. No model confidence is treated as a calibrated probability of physical existence. No depth or surface normal is fabricated from one RGB image.
 
+## Visual Demo
+
+| Constraint satisfied | Constraint violated |
+|:---:|:---:|
+| ![PASS](outputs/demo_supported_annotated.png) | ![WARN](outputs/demo_floating_annotated.png) |
+| PASS — cup on table | WARN — declared support relation violated |
+
+*Deterministic synthetic scenes with predefined object boxes.
+Not real-model inference results.*
+
 ## 1. Run the reproducible demo
 
 ```bash
@@ -72,6 +82,14 @@ python oscf_cv_mvp.py --image scene.png --detections-json boxes.json --on cup:ta
 
 You may also provide `--depth-npy depth.npy`, where the supplied **registered H×W depth proxy** is already normalized to [0,1]. This code will not infer metric depth or unknown absolute scale from bounding boxes.
 
+**Python:** 3.10+
+
+**License:** Apache License 2.0.
+
+**Optional dependencies:** Ultralytics for YOLO / SAM2 inference.
+Check third-party model and dependency licenses
+before redistribution or commercial deployment.
+
 ## 5. Exactly what is the octonion?
 
 The Cayley-Dickson multiplication implements an **actual nonassociative octonion algebra**, not just an eight-number vector. For each entity:
@@ -104,3 +122,9 @@ Compare at least: geometry/scene-graph rules alone; linear 8D features; randomly
 2. Video object ID tracking, temporal constraints and a state cache; optionally add depth/pose estimates.
 3. Intervention/counterfactual dataset and strict ablations to see whether nonassociativity adds anything beyond baselines.
 4. Only after those steps: set a deployment-specific risk threshold and consider blocking an action based on identified, reliable constraints.
+
+## Collaboration Wanted
+
+You are welcome to provide suggestions on real ID Switch videos, frame-by-frame detection boxes and trajectory IDs, and the tracker state update mechanism.
+
+OSCF-Track is a planned research direction, not an existing feature at present.
